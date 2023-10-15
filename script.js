@@ -1,112 +1,106 @@
 const questions = [
+  //Questions
   {
-      question: "What is 5 + 2?",
-      choices: ["7", "4", "5"],
-      correct: "7",
+      question: "What is 10 + 2?",
+      choices: ["12", "4", "5", "6"],
+      correctAnswer: "12",
   },
   {
-      question: "Which animal locks their legs when asleep?",
-      choices: ["Horses", "Cows", "Kangaroo"],
-      correct: "Horses",
-  },
-  {
-      question: "Which starter class uses a bow?",
-      choices: ["Barbarian", "Archer", "Mage", "Fighter"],
-      correct: "Archer",
-  },
-  
-  {
-      question: "What city is the capital of California?",
-      choices:["Oakand", "Vallejo","San Francisco", "Sacramento"],
-      correct: "Sacramento",
+    question: "Which animal locks their legs when asleep?",
+    choices: ["Horses", "Cows", "Kangaroo"],
+    correctAnswer: "Horses",
+},
+{
+  question: "Which starter class uses a bow?",
+  choices: ["Barbarian", "Archer", "Mage", "Fighter"],
+  correctAnswer: "Archer",
+},
+{
+  question: "What city is the capital of California?",
+  choices:["Oakand", "Vallejo","San Francisco", "Sacramento"],
+  correctAnswer: "Sacramento",
 
-  }
-  
-  // Questions
+},
 ];
-
-const quizContainer = document.querySelector(".quiz-container");
-const questionContainer = document.getElementById("question");
-const choicesContainer = document.getElementById("choices");
-const timeElement = document.getElementById("time");
-const progressBar = document.getElementById("progress");
-const progressBarWidth = progressBar.offsetWidth;
+//Const statements
+const startButton = document.getElementById("start-button");
+const quizScreen = document.getElementById("quiz-screen");
+const endScreen = document.getElementById("end-screen");
+const questionElement = document.getElementById("question");
+const choicesElement = document.getElementById("choices");
+const timeLeftElement = document.getElementById("time-left");
+const finalScoreElement = document.getElementById("final-score");
+const initialsElement = document.getElementById("initials");
+const saveScoreButton = document.getElementById("save-score");
 
 let currentQuestionIndex = 0;
 let timeLeft = 60;
-
+let timer;
+//functions w/ if-else statements
 function startQuiz() {
-  displayQuestion();
-  const interval = setInterval(function () {
-      timeLeft--;
-      timeElement.textContent = timeLeft + " seconds";
-      progressBar.style.width = (timeLeft / 60) * progressBarWidth + "px";
+  startButton.style.display = "none";
+  quizScreen.style.display = "block";
+  setTimer();
+  showQuestion();
+}
 
-      if (timeLeft <= 0 || currentQuestionIndex >= questions.length) {
-          clearInterval(interval);
+function setTimer() {
+  timer = setInterval(function() {
+      timeLeft--;
+      timeLeftElement.textContent = timeLeft;
+      if (timeLeft <= 0) {
           endQuiz();
       }
   }, 1000);
 }
 
-function displayQuestion() {
-  if (currentQuestionIndex < questions.length) {
-      questionContainer.textContent = questions[currentQuestionIndex].question;
-      choicesContainer.innerHTML = "";
-
-      questions[currentQuestionIndex].choices.forEach(function (choice) {
-          const li = document.createElement("li");
-          const button = document.createElement("button");
-          button.textContent = choice;
-          button.addEventListener("click", checkAnswer);
-          li.appendChild(button);
-          choicesContainer.appendChild(li);
-      });
-  } else {
-      endQuiz();
-  }
+function showQuestion() {
+  const question = questions[currentQuestionIndex];
+  questionElement.textContent = question.question;
+  choicesElement.innerHTML = "";
+  
+  question.choices.forEach(function(choice) {
+      const button = document.createElement("button");
+      button.textContent = choice;
+      button.addEventListener("click", checkAnswer);
+      choicesElement.appendChild(button);
+  });
 }
 
 function checkAnswer(event) {
   const selectedAnswer = event.target.textContent;
-  const correctAnswer = questions[currentQuestionIndex].correct;
+  const question = questions[currentQuestionIndex];
 
-  if (selectedAnswer === correctAnswer) {
-      //If Else Correct answer statements
-      
+  if (selectedAnswer === question.correctAnswer) {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+          showQuestion();
+      } else {
+          endQuiz();
+      }
   } else {
-      
+      timeLeft -= 10; // Subtracts time for an incorrect answer
   }
-
-  currentQuestionIndex++;
-  displayQuestion();
 }
-// ...
-
-function checkAnswer(event) {
-  const selectedAnswer = event.target.textContent;
-  const correctAnswer = questions[currentQuestionIndex].correct;
-
-  if (selectedAnswer === correctAnswer) {
-      // Correct answer alert
-      alert("Congratulations! Correct answer!");
-  } else {
-      // Incorrect answer alert
-      alert("Incorrect answer. The correct answer is: " + correctAnswer);
-  }
-
-  currentQuestionIndex++;
-  displayQuestion();
-}
-
-// ...
-
 
 function endQuiz() {
-  // Quiz end
-  questionContainer.textContent = "Quiz Ended!";
-  choicesContainer.innerHTML = "";
-  timeElement.textContent = "Time's Up!";
+  clearInterval(timer);
+  quizScreen.style.display = "none";
+  endScreen.style.display = "block";
+  finalScoreElement.textContent = timeLeft;
 }
 
-startQuiz();
+function saveScore() {
+  const initials = initialsElement.value;
+  const score = timeLeft;
+
+  if (initials) {
+      const scores = JSON.parse(localStorage.getItem("scores")) || [];
+      scores.push({ initials, score });
+      localStorage.setItem("scores", JSON.stringify(scores));
+      location.reload(); // Reload the page to play again
+  }
+}
+
+startButton.addEventListener("click", startQuiz);
+saveScoreButton.addEventListener("click", saveScore);
